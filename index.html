@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI in Review: 3 Years Through Simon Willison's Lens</title>
+
+    <!-- Open Graph / LinkedIn -->
+    <meta property="og:title" content="AI in Review: 3 Years Through Simon Willison's Lens">
+    <meta property="og:description" content="70 defining moments from 700+ blog posts. Interactive visualization of AI's evolution 2023-2025.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ai-in-review.netlify.app/">
+    <meta property="og:image" content="https://ai-in-review.netlify.app/preview.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI in Review: 3 Years Through Simon Willison's Lens">
+    <meta name="twitter:description" content="70 defining moments from 700+ blog posts. Interactive visualization of AI's evolution 2023-2025.">
+    <meta name="twitter:image" content="https://ai-in-review.netlify.app/preview.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg: #faf9f7;
+            --bg-card: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #666;
+            --text-light: #888;
+            --border: #e5e5e5;
+            --accent: #c45d3a;
+            --accent-light: #f5ebe8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+            font-size: 15px;
+            letter-spacing: -0.01em;
+            /* Subtle grain texture for depth */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+        }
+
+        header {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 1.5rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.35rem;
+            background: linear-gradient(135deg, var(--text) 0%, #4a4a4a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .curation-note {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .attribution {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .attribution a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .attribution a:hover { text-decoration: underline; }
+
+        /* About Section */
+        .about-section {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            max-width: 700px;
+        }
+
+        .about-section summary {
+            cursor: pointer;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .about-section summary:hover {
+            text-decoration: underline;
+        }
+
+        .about-section p {
+            margin: 0.75rem 0;
+            line-height: 1.6;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            animation: fadeIn 0.4s ease-out 0.2s both;
+        }
+
+        .nav-tab {
+            font-family: inherit;
+            font-size: 0.85rem;
+            padding: 0.8rem 1.15rem;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.12s ease, border-color 0.12s ease;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* View Containers */
+        .view-container {
+            display: none;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            animation: fadeInUp 0.35s ease-out;
+        }
+
+        .view-container.active { display: block; }
+
+        #list-view { max-width: 720px; }
+
+        /* Filter Controls */
+        .controls { margin-bottom: 1.5rem; }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .filter-row:last-child { margin-bottom: 0; }
+
+        .filter-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+            min-width: 70px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        button:not(.nav-tab) {
+            font-family: inherit;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.12s ease;
+            font-weight: 500;
+        }
+
+        button:not(.nav-tab):hover {
+            border-color: var(--text-light);
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        button:not(.nav-tab).active {
+            background: var(--text);
+            border-color: var(--text);
+            color: var(--bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        button:not(.nav-tab):active {
+            transform: scale(0.97);
+        }
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat span { font-weight: 600; color: var(--text); }
+
+        /* Insights Bar - Key statistics at a glance (Tufte: prominent data) */
+        .insights-bar {
+            background: linear-gradient(135deg, var(--accent-light) 0%, rgba(245, 235, 232, 0.7) 100%);
+            border-left: 3px solid var(--accent);
+            padding: 0.85rem 1.15rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.75rem;
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .insights-bar .insight {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .insights-bar .insight-value {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .insights-bar .insight-highlight {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Event Cards */
+        .year-section { margin-bottom: 2.5rem; }
+
+        .year-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--text);
+        }
+
+        .year-title {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .year-source {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-style: italic;
+        }
+
+        .year-source:hover { color: var(--accent); }
+
+        .themes {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--accent-light);
+            border-left: 3px solid var(--accent);
+            font-size: 0.85rem;
+        }
+
+        .themes-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .themes-list { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; }
+        .theme-name { font-weight: 600; }
+        .theme-desc { color: var(--text-muted); }
+
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        /* Vertical timeline line */
+        .events-list::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .month-header {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 1.25rem 0 0.5rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .month-header:first-child {
+            margin-top: 0;
+        }
+
+        .event-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+            position: relative;
+            border-radius: 2px;
+        }
+
+        /* Event dot on timeline - consistent small size for all events */
+        .event-card::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 50%;
+            width: 5px;
+            height: 5px;
+            background: var(--text-light);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Same size for all events - no visual distinction needed here */
+        .event-card.has-links::before {
+            background: var(--text-muted);
+        }
+
+        .event-card:hover {
+            border-color: var(--text-light);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transform: translateX(2px);
+        }
+        .event-card.expanded {
+            border-color: var(--accent);
+            border-left-width: 3px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .event-title { font-weight: 600; color: var(--text); font-size: 0.95rem; }
+        .event-date { font-size: 0.8rem; color: var(--text-light); white-space: nowrap; }
+        .event-meta { margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; }
+        .event-description { margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem; }
+        .event-links { margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--border); display: none; }
+        .event-card.expanded .event-links { display: block; }
+        .event-link { display: block; color: var(--accent); text-decoration: none; font-size: 0.85rem; padding: 0.15rem 0; }
+        .event-link:hover { text-decoration: underline; }
+
+        /* Visualization Containers - Clean, focused presentation */
+        .viz-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.5rem;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .viz-title {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .viz-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        /* SVG Styles - Tufte-inspired minimal axes */
+        svg { font-family: 'IBM Plex Sans', sans-serif; }
+        .axis text { font-size: 10px; fill: var(--text-light); letter-spacing: 0.02em; }
+        .axis path { stroke: var(--border); stroke-width: 1; }
+        .axis line { stroke: var(--border); stroke-opacity: 0.3; }
+        .grid line { stroke: var(--border); stroke-opacity: 0.15; stroke-dasharray: 2,3; }
+
+        /* Tooltip - Refined, minimal design */
+        .tooltip {
+            position: absolute;
+            background: var(--text);
+            color: var(--bg);
+            padding: 0.65rem 0.9rem;
+            border-radius: 3px;
+            font-size: 0.78rem;
+            max-width: 260px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+            transform: translateY(4px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+            line-height: 1.45;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            letter-spacing: -0.01em;
+        }
+        .tooltip-date { color: #999; font-size: 0.7rem; }
+        .tooltip-link { color: #8bc4ff; font-size: 0.7rem; margin-top: 0.3rem; font-style: italic; }
+
+        /* Swimlane Timeline */
+        .swimlane-container {
+            margin-bottom: 2rem;
+        }
+
+        .swimlane-year {
+            margin-bottom: 1.5rem;
+        }
+
+        .swimlane-year-label {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .swimlane-year-label span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-weight: 400;
+        }
+
+        .swimlane-track {
+            position: relative;
+            height: 85px;
+            /* Tufte-style: subtle month divisions, not heavy gridlines */
+            background: linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px);
+            background-size: calc(100% / 12) 100%;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .swimlane-months {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.35rem;
+        }
+
+        .swimlane-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            cursor: pointer;
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.15s ease;
+            border: 2px solid var(--bg-card);
+        }
+
+        /* Impact-based dot sizes - clear visual hierarchy (Tufte: size encodes data) */
+        .swimlane-dot.impact-low { width: 5px; height: 5px; border-width: 1.5px; }
+        .swimlane-dot.impact-medium { width: 8px; height: 8px; }
+        .swimlane-dot.impact-high { width: 11px; height: 11px; }
+        .swimlane-dot.impact-top { width: 14px; height: 14px; border-width: 2.5px; }
+
+        .swimlane-dot:hover {
+            transform: translate(-50%, -50%) scale(1.4);
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .swimlane-dot.has-link {
+            box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 2.5px currentColor;
+        }
+
+        .swimlane-dot.has-link:hover {
+            box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 3px currentColor, 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Bar Chart - Minimal, focused on data */
+        .bar {
+            transition: opacity 0.15s ease, filter 0.15s ease;
+            cursor: pointer;
+        }
+        .bar:hover {
+            filter: brightness(1.1) saturate(1.1);
+            opacity: 0.95;
+        }
+
+        /* Legend - Compact, scannable */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem 1.25rem;
+            margin-bottom: 1.1rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        footer {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        .footer-credits {
+            margin-bottom: 1rem;
+        }
+
+        .footer-credits p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .footer-links a { color: var(--text-muted); }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+
+        .cta-section p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .cta-button.primary {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .cta-button.primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Footer Methodology */
+        .footer-methodology {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .footer-section-title {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .footer-description {
+            margin-bottom: 1rem;
+        }
+
+        .formula-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .formula {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.1rem;
+            font-style: italic;
+            color: var(--text);
+            letter-spacing: 0.01em;
+        }
+
+        .formula-legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+
+        .formula-item {
+            padding: 0.25rem 0;
+        }
+
+        .formula-item strong {
+            color: var(--accent);
+        }
+
+        .footer-caveat {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: var(--text-light);
+            margin-top: 0.75rem;
+        }
+
+        /* Brief View & Tile Graph */
+        #brief-view {
+            max-width: 1100px;
+        }
+
+        .brief-section {
+            margin-bottom: 2rem;
+        }
+
+        .brief-header {
+            font-family: 'Crimson Pro', Georgia, serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .brief-subheader {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .tile-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 0.75rem;
+            padding-top: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        box-shadow 0.2s ease,
+                        border-color 0.15s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+            animation: tileReveal 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes tileReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .tile:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.06);
+            border-color: var(--text-light);
+        }
+
+        .tile:active {
+            transform: translateY(-2px) scale(0.99);
+            transition-duration: 0.1s;
+        }
+
+        .tile-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+
+        .tile-meta {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        .tile-category-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        /* Tile sizes based on impact score */
+        .tile-size-1 { width: 140px; min-height: 70px; }
+        .tile-size-2 { width: 170px; min-height: 85px; }
+        .tile-size-3 { width: 200px; min-height: 100px; }
+        .tile-size-4 { width: 240px; min-height: 115px; }
+
+        .tile.has-link::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .legend-item {
+            cursor: help;
+        }
+
+        .legend-item:hover {
+            text-decoration: underline dotted;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            header { padding: 2rem 1rem 1rem; }
+            .subtitle { font-size: 0.9rem; }
+            .curation-note { font-size: 0.8rem; }
+            .nav-tabs { padding: 0 1rem; }
+            .view-container { padding: 1.5rem 1rem; }
+            .viz-container { padding: 1rem; }
+            .tile-size-1, .tile-size-2, .tile-size-3, .tile-size-4 {
+                width: calc(50% - 0.5rem);
+                min-height: auto;
+            }
+            .cta-section { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI in Review</h1>
+        <p id="subtitle" class="subtitle"><!-- Generated by JS --></p>
+        <p id="curation-note" class="curation-note"><!-- Generated by JS --></p>
+        <div class="attribution">
+            Based on <a href="https://simonwillison.net/">Simon Willison's</a> annual reviews:
+            <span id="year-links"><!-- Generated by JS --></span>
+        </div>
+        <details class="about-section">
+            <summary>About AI in Review</summary>
+            <p id="about-intro"><!-- Generated by JS --></p>
+            <p>All data comes from <a href="https://simonwillison.net/">Simon Willison's</a> annual LLM reviews (15,000+ words each). Simon co-created Django and created <a href="https://datasette.io/">Datasette</a>. He writes about AI and builds with it daily.</p>
+            <p>Filter by category or year and spot trends at a glance. Larger tiles mark events Simon covered most thoroughly.</p>
+        </details>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="brief">30-Second Brief</button>
+        <button class="nav-tab" data-view="timeline">Timeline</button>
+        <button class="nav-tab" data-view="categories">Category Trends</button>
+        <button class="nav-tab" data-view="companies">Company Activity</button>
+        <button class="nav-tab" data-view="trends">Pricing</button>
+        <button class="nav-tab" data-view="list">Events List</button>
+    </nav>
+
+    <!-- 30-Second Brief View -->
+    <div id="brief-view" class="view-container active">
+        <div class="controls">
+            <div class="filter-row">
+                <span class="filter-label">Year</span>
+                <div class="filter-group" id="brief-year-filters">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Category</span>
+                <div class="filter-group" id="brief-category-filters">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+        <div id="brief-insights" class="insights-bar"></div>
+        <div class="legend" id="brief-legend"></div>
+        <div id="brief-content"></div>
+    </div>
+
+    <!-- Events List View -->
+    <div id="list-view" class="view-container">
+        <div class="controls">
+            <div class="filter-row">
+                <span class="filter-label">Year</span>
+                <div class="filter-group" id="list-year-filters">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Category</span>
+                <div class="filter-group" id="list-category-filters">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+        <div id="list-insights" class="insights-bar"></div>
+        <div id="timeline-list"></div>
+    </div>
+
+    <!-- Timeline View -->
+    <div id="timeline-view" class="view-container">
+        <div class="viz-container">
+            <h2 class="viz-title">Visual Timeline</h2>
+            <p class="viz-description">Events plotted across each year. Dot size reflects impact score. Hover for details, click linked events (with rings) to open source.</p>
+            <div id="timeline-insights" class="insights-bar"></div>
+            <div class="controls">
+                <div class="filter-row">
+                    <span class="filter-label">Year</span>
+                    <div class="filter-group" id="timeline-year-filters">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <span class="filter-label">Category</span>
+                    <div class="filter-group" id="timeline-category-filters">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="legend" id="swimlane-legend"></div>
+            <div id="swimlane-timeline" class="swimlane-container"></div>
+        </div>
+    </div>
+
+    <!-- Category Trends View -->
+    <div id="categories-view" class="view-container">
+        <div class="viz-container">
+            <h2 class="viz-title">Category Distribution by Quarter</h2>
+            <p class="viz-description">How the focus shifted between different types of developments over time. Hover over bars for details.</p>
+            <div id="category-insights" class="insights-bar"></div>
+            <div class="controls">
+                <div class="filter-row">
+                    <span class="filter-label">Year</span>
+                    <div class="filter-group" id="category-year-filters">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="legend" id="category-legend"></div>
+            <div class="chart-container">
+                <svg id="category-chart"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Activity View -->
+    <div id="companies-view" class="view-container">
+        <div class="viz-container">
+            <h2 class="viz-title">Company Activity</h2>
+            <p class="viz-description">Number of notable events involving each company.</p>
+            <div id="company-insights" class="insights-bar"></div>
+            <div class="controls">
+                <div class="filter-row">
+                    <span class="filter-label">Year</span>
+                    <div class="filter-group" id="company-year-filters">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <svg id="company-chart"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing View -->
+    <div id="trends-view" class="view-container">
+        <div class="viz-container">
+            <h2 class="viz-title">API Pricing Over Time</h2>
+            <p class="viz-description">The dramatic collapse of LLM API costs from 2023 to 2025.</p>
+            <div id="pricing-insights" class="insights-bar"></div>
+            <div class="chart-container">
+                <svg id="trends-chart"></svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-date"></div>
+        <div class="tooltip-link"></div>
+    </div>
+
+    <div class="cta-section">
+        <p>Want the full picture?</p>
+        <a href="https://simonwillison.net/" class="cta-button primary">Read Simon's Annual Reviews →</a>
+    </div>
+
+    <footer>
+        <div class="footer-methodology" id="footer-methodology">
+            <h3 class="footer-section-title">How Impact Score is Calculated</h3>
+            <p class="footer-description">In the 30-Second Brief (tile size) and Timeline (dot size), visual size represents algorithmic impact score. Events are ranked using proxy metrics derived from Simon's coverage:</p>
+            <div class="formula-box">
+                <span class="formula">Impact = (Links × 2) + Categories + Numbers + (Themes × 3)</span>
+            </div>
+            <div class="formula-legend">
+                <div class="formula-item"><strong>Links:</strong> Source links indicate importance (Simon cited it)</div>
+                <div class="formula-item"><strong>Categories:</strong> Multi-category events have broader impact</div>
+                <div class="formula-item"><strong>Numbers:</strong> Concrete metrics in description (+1 if present)</div>
+                <div class="formula-item"><strong>Themes:</strong> Mentioned in year's key themes = defining moment</div>
+            </div>
+            <p class="footer-description" style="margin-top: 1rem;"><strong>Examples:</strong> "Claude Code released" scores high (2 categories, 1 link, mentioned in themes = 8 points). "Gullibility problem identified" scores low (1 category, 0 links, no numbers = 1 point).</p>
+            <p class="footer-caveat">This is algorithmic ranking, not expert curation. Some impactful events may score lower if they lack these signals.</p>
+        </div>
+        <div class="footer-credits">
+            <p><strong>Visualization by <a href="https://github.com/karlolukic">Karlo Lukic</a></strong> ·
+            <a href="https://github.com/karlolukic/ai-in-review">View on GitHub</a></p>
+            <p>All content derives from <a href="https://simonwillison.net/">Simon Willison's</a> blog.
+            Simon is a co-creator of Django and creator of <a href="https://datasette.io/">Datasette</a>.</p>
+        </div>
+        <div class="footer-links">
+            <a href="https://simonwillison.net/">simonwillison.net</a>
+            <a href="https://github.com/simonw">Simon's GitHub</a>
+            <a href="https://twitter.com/simonw">@simonw</a>
+        </div>
+    </footer>
+
+    <script>
+        // Timeline Data
+        const timelineData = {
+            2023: {
+                source: "https://simonwillison.net/2023/Dec/31/ai-in-2023/",
+                title: "Stuff We Figured Out About AI in 2023",
+                events: [
+                    { title: "Meta releases Llama", date: "February 2023", categories: ["models", "companies"], description: "Meta released the original Llama model, sparking the open-weight model revolution.", links: [{ text: "Llama announcement", url: "https://ai.meta.com/llama/" }] },
+                    { title: "Microsoft integrates GPT-4 into Bing", date: "February 2023", categories: ["companies", "tools"], description: "Microsoft launched the new Bing search powered by GPT-4 integration.", links: [{ text: "Bing Chat announcement", url: "https://blogs.microsoft.com/blog/2023/02/07/reinventing-search-with-a-new-ai-powered-microsoft-bing-and-edge-your-copilot-for-the-web/" }] },
+                    { title: "llama.cpp released", date: "March 2023", categories: ["tools"], description: "Made it possible to run LLMs on consumer hardware like MacBooks.", links: [{ text: "llama.cpp GitHub", url: "https://github.com/ggerganov/llama.cpp" }] },
+                    { title: "OpenAI releases GPT-4", date: "March 2023", categories: ["models", "companies"], description: "GPT-4 set a new benchmark that wouldn't be surpassed for over a year.", links: [{ text: "GPT-4 announcement", url: "https://openai.com/index/gpt-4/" }] },
+                    { title: "Web LLM - Models in browser", date: "April 2023", categories: ["tools"], description: "Running LLMs directly in the browser via WebAssembly.", links: [{ text: "Web LLM post", url: "https://simonwillison.net/2023/Apr/16/web-llm/" }] },
+                    { title: "Meta releases Llama 2", date: "July 2023", categories: ["models", "companies"], description: "Llama 2 came with commercial use permissions.", links: [{ text: "Llama 2", url: "https://ai.meta.com/llama/" }] },
+                    { title: "Mistral releases first model", date: "September 2023", categories: ["models", "companies"], description: "French AI startup Mistral entered the scene.", links: [{ text: "Mistral AI", url: "https://mistral.ai/" }] },
+                    { title: "NYT sues OpenAI", date: "December 2023", categories: ["research", "companies"], description: "Landmark copyright lawsuit over training data.", links: [{ text: "NYT Complaint", url: "https://nytco-assets.nytimes.com/2023/12/NYT_Complaint_Dec2023.pdf" }] },
+                    { title: "nanoGPT demonstrates simplicity", date: "2023", categories: ["concepts", "research"], description: "LLMs can be built in ~200 lines of Python.", links: [{ text: "nanoGPT", url: "https://github.com/karpathy/nanoGPT/blob/master/train.py" }] },
+                    { title: "Prompt Injection unsolved", date: "2023", categories: ["concepts", "research"], description: "Recognized as fundamental security problem.", links: [{ text: "Series", url: "https://simonwillison.net/series/prompt-injection/" }] },
+                    { title: "Gullibility problem identified", date: "2023", categories: ["concepts"], description: "LLMs following untrusted instructions is critical limitation.", links: [] },
+                    { title: "Open LLM Leaderboard", date: "2023", categories: ["tools", "research"], description: "Hugging Face benchmark became the standard.", links: [{ text: "Leaderboard", url: "https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard" }] },
+                    { title: "Training costs: ~$35,000", date: "2023", categories: ["pricing"], description: "Model training became accessible.", links: [] },
+                    { title: "Code generation as killer app", date: "2023", categories: ["concepts"], description: "Most effective LLM application.", links: [] }
+                ],
+                themes: [
+                    { title: "Accessibility", description: "LLMs went from cloud-only to laptops" },
+                    { title: "Open Weight", description: "Llama sparked revolution" },
+                    { title: "Security", description: "Prompt injection identified" }
+                ]
+            },
+            2024: {
+                source: "https://simonwillison.net/2024/Dec/31/llms-in-2024/",
+                title: "Things We Learned About LLMs in 2024",
+                events: [
+                    { title: "Gemini 1.5 Pro: 1M context", date: "February 2024", categories: ["models", "companies"], description: "Google launched 1 million token context window.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Feb/21/gemini-pro-video/" }] },
+                    { title: "Claude 3 series", date: "March 2024", categories: ["models", "companies"], description: "Claude 3 Opus became preferred model.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Mar/4/claude-3/" }] },
+                    { title: "GPT-4o announced", date: "May 2024", categories: ["models", "companies"], description: "Multimodal audio, 12x cheaper.", links: [{ text: "Announcement", url: "https://openai.com/index/hello-gpt-4o/" }] },
+                    { title: "'Slop' coined", date: "May 2024", categories: ["concepts"], description: "Term for AI-generated content.", links: [{ text: "Post", url: "https://simonwillison.net/2024/May/8/slop/" }] },
+                    { title: "Claude 3.5 Sonnet + Artifacts", date: "June 2024", categories: ["models", "tools", "companies"], description: "Prompt-driven app generation breakthrough.", links: [{ text: "Announcement", url: "https://www.anthropic.com/news/claude-3-5-sonnet" }] },
+                    { title: "OpenAI o1 reasoning", date: "September 2024", categories: ["models", "companies"], description: "Inference-scaling paradigm.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Sep/12/openai-o1/" }] },
+                    { title: "Qwen2-VL vision", date: "September 2024", categories: ["models"], description: "Alibaba's competitive vision model.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Sep/4/qwen2-vl/" }] },
+                    { title: "Pixtral 12B", date: "September 2024", categories: ["models", "companies"], description: "Mistral's first vision model.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Sep/11/pixtral/" }] },
+                    { title: "Llama 3.2 vision", date: "September 2024", categories: ["models", "companies"], description: "Meta's open-weight vision.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Sep/25/llama-32/" }] },
+                    { title: "NotebookLM Audio", date: "September 2024", categories: ["tools", "companies"], description: "Podcast-style audio went viral.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Sep/29/notebooklm-audio-overview/" }] },
+                    { title: "OpenAI DevDay 2024", date: "October 2024", categories: ["companies"], description: "Audio API capabilities.", links: [{ text: "Live blog", url: "https://simonwillison.net/2024/Oct/1/openai-devday-2024-live-blog/" }] },
+                    { title: "Claude Computer Use", date: "October 2024", categories: ["tools", "companies"], description: "Control computers via screenshots.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Oct/22/computer-use/" }] },
+                    { title: "Qwen2.5-Coder Apache 2.0", date: "November 2024", categories: ["models"], description: "Truly open-weight coding model.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Nov/12/qwen25-coder/" }] },
+                    { title: "QwQ reasoning Apache 2.0", date: "November 2024", categories: ["models"], description: "Open-weight reasoning model.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Nov/27/qwq/" }] },
+                    { title: "Amazon Nova", date: "December 2024", categories: ["models", "companies"], description: "Amazon enters frontier competition.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Dec/4/amazon-nova/" }] },
+                    { title: "Gemini 2.0 Flash thinking", date: "December 2024", categories: ["models", "companies"], description: "Google's reasoning models.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Dec/11/gemini-2/" }] },
+                    { title: "OpenAI o3 announced", date: "December 2024", categories: ["models", "companies"], description: "ARC-AGI high scores.", links: [{ text: "Live blog", url: "https://simonwillison.net/2024/Dec/20/live-blog-the-12th-day-of-openai/" }] },
+                    { title: "DeepSeek v3", date: "December 2024", categories: ["models", "companies"], description: "685B trained for ~$5.6M.", links: [{ text: "Post", url: "https://simonwillison.net/2024/Dec/25/deepseek-v3/" }] },
+                    { title: "GPT-4 barrier broken", date: "2024", categories: ["concepts", "research"], description: "18 orgs have 70+ models exceeding GPT-4.", links: [{ text: "Leaderboard", url: "https://lmarena.ai/?leaderboard" }] },
+                    { title: "Price collapse: 12x", date: "2024", categories: ["pricing"], description: "$30 to $2.50 per million tokens.", links: [{ text: "Pricing", url: "https://simonwillison.net/tags/llm-pricing/" }] },
+                    { title: "Apple MLX", date: "2024", categories: ["tools"], description: "LLMs on Apple Silicon.", links: [{ text: "GitHub", url: "https://github.com/ml-explore/mlx" }] },
+                    { title: "ChatGPT Pro $200/mo", date: "December 2024", categories: ["pricing", "companies"], description: "Premium tier for o1.", links: [] },
+                    { title: "LLMs on iPhone", date: "2024", categories: ["tools"], description: "Llama 3.2 3B via MLC Chat.", links: [{ text: "App", url: "https://apps.apple.com/us/app/mlc-chat/id6448482937" }] }
+                ],
+                themes: [
+                    { title: "Multimodal", description: "Vision, audio, video standard" },
+                    { title: "Reasoning", description: "o1 inference-scaling" },
+                    { title: "Price Collapse", description: "10-100x cheaper" },
+                    { title: "Chinese Models", description: "Qwen, DeepSeek competitive" }
+                ]
+            },
+            2025: {
+                source: "https://simonwillison.net/2025/Dec/31/the-year-in-llms/",
+                title: "2025: The Year in LLMs",
+                events: [
+                    { title: "DeepSeek R1", date: "January 2025", categories: ["models", "companies"], description: "$593B NVIDIA selloff triggered.", links: [{ text: "GitHub", url: "https://github.com/deepseek-ai/DeepSeek-R1" }] },
+                    { title: "Claude Code released", date: "February 2025", categories: ["tools", "companies"], description: "$1B ARR by December.", links: [{ text: "Claude Code", url: "https://www.anthropic.com/claude-code" }] },
+                    { title: "'Vibe Coding' coined", date: "February 2025", categories: ["concepts"], description: "Karpathy's term for AI coding.", links: [{ text: "Tweet", url: "https://twitter.com/karpathy/status/1886192184808149383" }] },
+                    { title: "GPT image editing", date: "March 2025", categories: ["models", "companies"], description: "100M signups in one week.", links: [{ text: "API", url: "https://platform.openai.com/docs/guides/images" }] },
+                    { title: "Llama 4 disappoints", date: "April 2025", categories: ["models", "companies"], description: "Too large for consumers.", links: [{ text: "Llama", url: "https://ai.meta.com/llama/" }] },
+                    { title: "AI search works now", date: "April 2025", categories: ["tools", "concepts"], description: "Finally genuinely useful.", links: [{ text: "Post", url: "https://simonwillison.net/2025/Apr/21/ai-assisted-search/" }] },
+                    { title: "MCP adoption", date: "May 2025", categories: ["tools", "concepts"], description: "OpenAI, Mistral adopt.", links: [{ text: "Spec", url: "https://modelcontextprotocol.io/" }] },
+                    { title: "Pelicans at Google I/O", date: "May 2025", categories: ["concepts"], description: "Meme in keynote.", links: [{ text: "Posts", url: "https://simonwillison.net/tags/pelican-riding-a-bicycle/" }] },
+                    { title: "IMO gold medals", date: "July 2025", categories: ["research", "companies"], description: "AI wins math olympiad.", links: [] },
+                    { title: "Qwen-Image", date: "August 2025", categories: ["models"], description: "Alibaba image generation.", links: [{ text: "Qwen", url: "https://qwenlm.github.io/" }] },
+                    { title: "GPT-5 launch", date: "August 2025", categories: ["models", "companies"], description: "Multi-hour task handling.", links: [{ text: "OpenAI", url: "https://openai.com/" }] },
+                    { title: "Claude Code Interpreter", date: "September 2025", categories: ["tools", "companies"], description: "Code execution in Claude.", links: [{ text: "Anthropic", url: "https://www.anthropic.com/" }] },
+                    { title: "ICPC win", date: "September 2025", categories: ["research"], description: "AI wins programming contest.", links: [] },
+                    { title: "Parallel agents", date: "October 2025", categories: ["concepts", "tools"], description: "Multiple agents workflow.", links: [{ text: "Post", url: "https://simonwillison.net/2025/Oct/5/parallel-coding-agents/" }] },
+                    { title: "Claude Code for web", date: "October 2025", categories: ["tools", "companies"], description: "Browser-based version.", links: [{ text: "Claude", url: "https://claude.ai/" }] },
+                    { title: "ChatGPT Atlas", date: "October 2025", categories: ["tools", "companies"], description: "Browser agent.", links: [] },
+                    { title: "Skills supersedes MCP", date: "October 2025", categories: ["tools", "concepts"], description: "New capabilities approach.", links: [] },
+                    { title: "Anthropic interpretability", date: "October 2025", categories: ["research", "companies"], description: "Major paper.", links: [{ text: "Research", url: "https://www.anthropic.com/research" }] },
+                    { title: "gpt-image-1-mini", date: "October 2025", categories: ["models"], description: "Smaller image model.", links: [] },
+                    { title: "Gemini 2.5 Flash Image", date: "November 2025", categories: ["models", "companies"], description: "Google's image model outperforms GPT image generation.", links: [] },
+                    { title: "Async agent research", date: "November 2025", categories: ["tools", "concepts"], description: "Background code research.", links: [{ text: "Post", url: "https://simonwillison.net/2025/Nov/6/async-code-research/" }] },
+                    { title: "Claude 4 'Snitch'", date: "2025", categories: ["concepts", "companies"], description: "Can contact law enforcement.", links: [] },
+                    { title: "Environmental demands", date: "December 2025", categories: ["research"], description: "200+ groups demand halt.", links: [] },
+                    { title: "Claude Code $1B ARR", date: "December 2025", categories: ["companies", "pricing"], description: "Revenue milestone.", links: [] },
+                    { title: "MCP to Foundation", date: "December 2025", categories: ["tools"], description: "Governance transferred.", links: [] },
+                    { title: "gpt-image-1.5", date: "December 2025", categories: ["models"], description: "Latest image model.", links: [] },
+                    { title: "GLM-4.7 tops benchmarks", date: "December 2025", categories: ["models"], description: "Chinese model #1.", links: [{ text: "Analysis", url: "https://artificialanalysis.ai/" }] },
+                    { title: "Claude Pro Max $200", date: "2025", categories: ["pricing", "companies"], description: "Premium tier.", links: [] },
+                    { title: "Google AI Ultra $249", date: "2025", categories: ["pricing", "companies"], description: "Highest tier.", links: [] },
+                    { title: "METR: 7mo doubling", date: "2025", categories: ["research"], description: "Task horizon doubles.", links: [] },
+                    { title: "110+ HTML tools", date: "2025", categories: ["tools"], description: "Simon's tool collection.", links: [{ text: "Tools", url: "https://tools.simonwillison.net/" }] },
+                    { title: "Context rot/engineering", date: "2025", categories: ["concepts"], description: "New terminology.", links: [] },
+                    { title: "Slopsquatting", date: "2025", categories: ["concepts", "research"], description: "Malware via hallucinations.", links: [] },
+                    { title: "Coding CLIs everywhere", date: "2025", categories: ["tools"], description: "Every lab released one.", links: [{ text: "Copilot CLI", url: "https://github.com/github/copilot-cli" }] }
+                ],
+                themes: [
+                    { title: "Coding Agents", description: "Claude Code $1B ARR" },
+                    { title: "Chinese Dominance", description: "GLM, DeepSeek, Qwen top" },
+                    { title: "Reasoning", description: "Every lab has it" },
+                    { title: "Browser Agents", description: "Atlas emerged" },
+                    { title: "Environment", description: "200+ groups concerned" }
+                ]
+            }
+        };
+
+        const allEvents = [];
+
+        // Dynamic years - derived from data, making future updates trivial
+        const YEARS = Object.keys(timelineData).map(Number).sort();
+        const LATEST_YEAR = Math.max(...YEARS);
+        const FIRST_YEAR = Math.min(...YEARS);
+
+        // Update title, subtitle, and curation note dynamically
+        const totalEvents = Object.values(timelineData).reduce((sum, year) => sum + year.events.length, 0);
+        document.title = `AI in Review: ${YEARS.length} Years Through Simon Willison's Lens (${FIRST_YEAR}-${LATEST_YEAR})`;
+        document.getElementById('subtitle').textContent = `Visualizing ${YEARS.length} years of AI breakthroughs, curated from Simon Willison's annual reviews.`;
+        document.getElementById('curation-note').textContent = `${totalEvents} defining moments from 700+ blog posts`;
+
+        const categoryColors = {
+            models: '#7c3aed',
+            tools: '#059669',
+            concepts: '#d97706',
+            pricing: '#db2777',
+            companies: '#2563eb',
+            research: '#dc2626'
+        };
+
+        const categoryDefinitions = {
+            models: 'New LLM releases and capability improvements',
+            tools: 'Software and APIs built with or for LLMs',
+            concepts: 'New ideas, terminology, and paradigms',
+            pricing: 'Cost changes and economic shifts',
+            companies: 'Organizational news and business moves',
+            research: 'Academic papers, benchmarks, and studies'
+        };
+
+        const companyKeywords = {
+            'OpenAI': ['openai', 'gpt', 'chatgpt', 'o1', 'o3'],
+            'Anthropic': ['anthropic', 'claude'],
+            'Google': ['google', 'gemini', 'notebooklm'],
+            'Meta': ['meta', 'llama'],
+            'Microsoft': ['microsoft', 'bing'],
+            'Mistral': ['mistral', 'pixtral'],
+            'Alibaba': ['alibaba', 'qwen', 'qwq'],
+            'DeepSeek': ['deepseek'],
+            'Amazon': ['amazon', 'nova']
+        };
+
+        // Impact scoring function
+        function calculateImpactScore(event) {
+            let score = 0;
+
+            // Links indicate importance (Simon linked to it)
+            score += event.links.length * 2;
+
+            // Multi-category events are more significant
+            score += event.categories.length;
+
+            // Numbers in description often indicate concrete impact
+            const hasNumbers = /\d+/.test(event.description);
+            if (hasNumbers) score += 1;
+
+            // Events mentioned in themes are key developments
+            const yearThemes = timelineData[event.year]?.themes || [];
+            const themeText = yearThemes.map(t => t.title + ' ' + t.description).join(' ').toLowerCase();
+            const firstWord = event.title.toLowerCase().split(' ')[0];
+            if (themeText.includes(firstWord)) {
+                score += 3;
+            }
+
+            return score;
+        }
+
+        // Map score to tile size class
+        function getTileSize(score) {
+            if (score <= 2) return 'tile-size-1';
+            if (score <= 4) return 'tile-size-2';
+            if (score <= 6) return 'tile-size-3';
+            return 'tile-size-4';
+        }
+
+        // Map score to dot impact class (for Timeline)
+        function getImpactClass(score) {
+            if (score <= 2) return 'impact-low';
+            if (score <= 4) return 'impact-medium';
+            if (score <= 6) return 'impact-high';
+            return 'impact-top';
+        }
+
+        function parseDate(dateStr, year) {
+            const months = { January: 0, February: 1, March: 2, April: 3, May: 4, June: 5,
+                           July: 6, August: 7, September: 8, October: 9, November: 10, December: 11 };
+            // Match "Month Day, Year", "Month Year", or just "Year"
+            const match = dateStr.match(/(\w+)\s+(\d{1,2})?,?\s*(\d{4})?/);
+            if (match && months[match[1]] !== undefined) {
+                const month = months[match[1]];
+                // If match[2] is 4 digits, it's actually the year, not the day
+                let day = 15;
+                let y = year;
+                if (match[2]) {
+                    if (match[2].length === 4) {
+                        // "February 2023" - match[2] is the year
+                        y = parseInt(match[2]);
+                    } else {
+                        // "February 14, 2023" - match[2] is the day
+                        day = parseInt(match[2]);
+                        y = match[3] ? parseInt(match[3]) : year;
+                    }
+                } else if (match[3]) {
+                    y = parseInt(match[3]);
+                }
+                return new Date(y, month, day);
+            }
+            // Just a year like "2023"
+            const yearMatch = dateStr.match(/^(\d{4})$/);
+            if (yearMatch) {
+                return new Date(parseInt(yearMatch[1]), 6, 15);
+            }
+            return new Date(year, 6, 15);
+        }
+
+        Object.keys(timelineData).forEach(year => {
+            timelineData[year].events.forEach(event => {
+                allEvents.push({
+                    ...event,
+                    year: parseInt(year),
+                    parsedDate: parseDate(event.date, parseInt(year))
+                });
+            });
+        });
+
+        allEvents.sort((a, b) => a.parsedDate - b.parsedDate);
+
+        // Tab Navigation - with URL hash persistence
+        function activateTab(viewName, updateHash = true) {
+            const tab = document.querySelector(`.nav-tab[data-view="${viewName}"]`);
+            if (!tab) return;
+
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(viewName + '-view').classList.add('active');
+
+            // Update URL hash for sharing/persistence (without scrolling)
+            if (updateHash) {
+                history.replaceState(null, '', '#' + viewName);
+            }
+
+            // Show methodology section only for Brief and Timeline tabs
+            const methodology = document.getElementById('footer-methodology');
+            if (viewName === 'brief' || viewName === 'timeline') {
+                methodology.style.display = 'block';
+            } else {
+                methodology.style.display = 'none';
+            }
+
+            if (viewName === 'brief') {
+                if (!window.briefDrawn) {
+                    renderBrief();
+                    window.briefDrawn = true;
+                }
+                updateBriefInsights();
+            }
+            if (viewName === 'timeline') {
+                if (!window.timelineDrawn) {
+                    renderSwimlane();
+                    window.timelineDrawn = true;
+                }
+                updateTimelineInsights();
+            }
+            if (viewName === 'categories') {
+                if (!window.categoryDrawn) {
+                    drawCategoryChart();
+                    window.categoryDrawn = true;
+                }
+                updateCategoryInsights();
+            }
+            if (viewName === 'companies') {
+                if (!window.companyDrawn) {
+                    drawCompanyChart();
+                    window.companyDrawn = true;
+                }
+                updateCompanyInsights();
+            }
+            if (viewName === 'trends') {
+                if (!window.trendsDrawn) {
+                    drawTrendsChart();
+                    window.trendsDrawn = true;
+                }
+                updatePricingInsights();
+            }
+            if (viewName === 'list') {
+                updateListInsights();
+            }
+        }
+
+        // Click handlers for tabs
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab.dataset.view));
+        });
+
+        // Handle browser back/forward navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash) activateTab(hash, false);
+        });
+
+        // Filter state - defaults to latest year (from YEARS constant)
+        let activeYear = String(LATEST_YEAR);
+        let activeCategory = 'all';
+        let activeTimelineYear = String(LATEST_YEAR);
+        let activeTimelineCategory = 'all';
+        let activeBriefYear = String(LATEST_YEAR);
+        let activeBriefCategory = 'all';
+        let activeCategoryChartYear = 'all';
+        let activeCompanyChartYear = 'all';
+
+        function renderList() {
+            const container = document.getElementById('timeline-list');
+            container.innerHTML = '';
+            let totalEvents = 0;
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+
+            const years = activeYear === 'all' ? YEARS.map(String) : [activeYear];
+
+            years.forEach(year => {
+                const yearData = timelineData[year];
+                const filtered = yearData.events.filter(e =>
+                    activeCategory === 'all' || e.categories.includes(activeCategory)
+                );
+                if (filtered.length === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'year-section';
+                section.innerHTML = `
+                    <div class="year-header">
+                        <h2 class="year-title">${year}</h2>
+                        <a href="${yearData.source}" target="_blank" class="year-source">${yearData.title}</a>
+                    </div>
+                `;
+
+                const themes = document.createElement('div');
+                themes.className = 'themes';
+                themes.innerHTML = `
+                    <div class="themes-title">Key Themes</div>
+                    <div class="themes-list">
+                        ${yearData.themes.map(t => `<div><span class="theme-name">${t.title}</span><span class="theme-desc">: ${t.description}</span></div>`).join('')}
+                    </div>
+                `;
+                section.appendChild(themes);
+
+                const list = document.createElement('div');
+                list.className = 'events-list';
+
+                // Group events by month
+                const eventsByMonth = {};
+                filtered.forEach(event => {
+                    // Parse month from date string
+                    const monthMatch = event.date.match(/^(\w+)/);
+                    let monthKey = 'Other';
+                    if (monthMatch && monthNames.includes(monthMatch[1])) {
+                        monthKey = monthMatch[1];
+                    } else if (event.date.match(/^\d{4}$/)) {
+                        // Just a year like "2025"
+                        monthKey = 'General';
+                    }
+                    if (!eventsByMonth[monthKey]) {
+                        eventsByMonth[monthKey] = [];
+                    }
+                    eventsByMonth[monthKey].push(event);
+                });
+
+                // Sort months in order (January first, then February, etc.)
+                const sortedMonths = Object.keys(eventsByMonth).sort((a, b) => {
+                    const aIdx = monthNames.indexOf(a);
+                    const bIdx = monthNames.indexOf(b);
+                    // Put 'General' and 'Other' at the end
+                    if (aIdx === -1 && bIdx === -1) return 0;
+                    if (aIdx === -1) return 1;
+                    if (bIdx === -1) return -1;
+                    return aIdx - bIdx;
+                });
+
+                sortedMonths.forEach(month => {
+                    // Add month header
+                    const monthHeader = document.createElement('div');
+                    monthHeader.className = 'month-header';
+                    monthHeader.textContent = month;
+                    list.appendChild(monthHeader);
+
+                    eventsByMonth[month].forEach(event => {
+                        totalEvents++;
+
+                        const card = document.createElement('div');
+                        card.className = 'event-card' + (event.links.length > 0 ? ' has-links' : '');
+                        const linksHTML = event.links.length > 0
+                            ? event.links.map(l => `<a href="${l.url}" target="_blank" class="event-link">${l.text}</a>`).join('')
+                            : '<span style="color:#888;font-style:italic">No links</span>';
+
+                        card.innerHTML = `
+                            <div class="event-header">
+                                <span class="event-title">${event.title}</span>
+                                <span class="event-date">${event.date}</span>
+                            </div>
+                            <div class="event-meta">${event.categories.join(' · ')}</div>
+                            <p class="event-description">${event.description}</p>
+                            <div class="event-links">${linksHTML}</div>
+                        `;
+                        card.addEventListener('click', (e) => {
+                            if (e.target.tagName === 'A') return;
+                            card.classList.toggle('expanded');
+                        });
+                        list.appendChild(card);
+                    });
+                });
+
+                section.appendChild(list);
+                container.appendChild(section);
+            });
+        }
+
+        // Brief View with Tile Graph
+        function renderBrief() {
+            createLegend('brief-legend');
+            const container = document.getElementById('brief-content');
+            container.innerHTML = '';
+
+            const years = activeBriefYear === 'all' ? YEARS : [parseInt(activeBriefYear)];
+
+            years.forEach(year => {
+                // Get events for this year, filtered by category, with scores, sorted by impact
+                let yearEvents = allEvents.filter(e => e.year === year);
+                if (activeBriefCategory !== 'all') {
+                    yearEvents = yearEvents.filter(e => e.categories.includes(activeBriefCategory));
+                }
+                yearEvents = yearEvents
+                    .map(e => ({ ...e, impactScore: calculateImpactScore(e) }))
+                    .sort((a, b) => b.impactScore - a.impactScore);
+
+                if (yearEvents.length === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'brief-section';
+
+                const yearData = timelineData[year];
+                const themesSummary = yearData.themes.slice(0, 3).map(t => t.title).join(', ');
+
+                section.innerHTML = `
+                    <h3 class="brief-header">${year}</h3>
+                    <p class="brief-subheader">Key themes: ${themesSummary} · ${yearEvents.length} events</p>
+                `;
+
+                // Create tile grid
+                const tileGrid = document.createElement('div');
+                tileGrid.className = 'tile-grid';
+
+                yearEvents.forEach((event, idx) => {
+                    const tile = document.createElement('div');
+                    const sizeClass = getTileSize(event.impactScore);
+                    const hasLink = event.links.length > 0;
+                    // When filtered by category, show that category; otherwise show primary
+                    const displayCategory = activeBriefCategory !== 'all' ? activeBriefCategory : event.categories[0];
+                    const color = categoryColors[displayCategory] || '#888';
+                    const displayLabel = displayCategory.charAt(0).toUpperCase() + displayCategory.slice(1);
+
+                    tile.className = `tile ${sizeClass}${hasLink ? ' has-link' : ''}`;
+                    // Staggered animation delay for visual interest
+                    tile.style.animationDelay = `${idx * 0.03}s`;
+                    tile.innerHTML = `
+                        <div class="tile-category-bar" style="background: ${color}"></div>
+                        <div class="tile-title">${event.title}</div>
+                        <div class="tile-meta">${displayLabel}</div>
+                    `;
+
+                    // Tooltip on hover
+                    tile.addEventListener('mouseover', (e) => {
+                        showTooltip(e, event.title, event.date, event.description);
+                    });
+                    tile.addEventListener('mouseout', hideTooltip);
+
+                    // Click to open link
+                    if (hasLink) {
+                        tile.addEventListener('click', () => {
+                            window.open(event.links[0].url, '_blank');
+                        });
+                    }
+
+                    tileGrid.appendChild(tile);
+                });
+
+                section.appendChild(tileGrid);
+                container.appendChild(section);
+            });
+
+            updateBriefInsights();
+        }
+
+        function updateBriefInsights() {
+            const container = document.getElementById('brief-insights');
+            const years = activeBriefYear === 'all' ? YEARS : [parseInt(activeBriefYear)];
+
+            // Count total events and compute stats
+            let totalEvents = 0;
+            let highImpact = 0;  // Score >= 5
+            let withLinks = 0;
+            years.forEach(year => {
+                let yearEvents = allEvents.filter(e => e.year === year);
+                if (activeBriefCategory !== 'all') {
+                    yearEvents = yearEvents.filter(e => e.categories.includes(activeBriefCategory));
+                }
+                totalEvents += yearEvents.length;
+                yearEvents.forEach(e => {
+                    if (calculateImpactScore(e) >= 5) highImpact++;
+                    if (e.links.length > 0) withLinks++;
+                });
+            });
+
+            const categoryLabel = activeBriefCategory === 'all' ? '' : ` in ${activeBriefCategory}`;
+            container.innerHTML = `
+                <div class="insight"><span class="insight-value">${totalEvents}</span> events${categoryLabel}</div>
+                <div class="insight"><span class="insight-highlight">${highImpact}</span> high-impact (larger tiles)</div>
+                <div class="insight"><span class="insight-value">${withLinks}</span> with source links</div>
+            `;
+        }
+
+        // Create year filters for all views (dynamically generated from YEARS)
+        createYearFilters('list-year-filters', 'year-btn', (year) => {
+            activeYear = year;
+            renderList();
+            updateListInsights();
+        });
+
+        createYearFilters('timeline-year-filters', 'timeline-year-btn', (year) => {
+            activeTimelineYear = year;
+            renderSwimlane();
+            updateTimelineInsights();
+        });
+
+        createYearFilters('brief-year-filters', 'brief-year-btn', (year) => {
+            activeBriefYear = year;
+            renderBrief();
+        });
+
+        // Create category filters for all views
+        createCategoryFilters('list-category-filters', 'category-btn', (cat) => {
+            activeCategory = cat;
+            renderList();
+            updateListInsights();
+        });
+
+        createCategoryFilters('timeline-category-filters', 'timeline-category-btn', (cat) => {
+            activeTimelineCategory = cat;
+            renderSwimlane();
+            updateTimelineInsights();
+        });
+
+        createCategoryFilters('brief-category-filters', 'brief-category-btn', (cat) => {
+            activeBriefCategory = cat;
+            renderBrief();
+        });
+
+        // Tooltip
+        const tooltip = document.getElementById('tooltip');
+        function showTooltip(event, title, date, linkText) {
+            tooltip.querySelector('.tooltip-title').textContent = title;
+            tooltip.querySelector('.tooltip-date').textContent = date || '';
+            tooltip.querySelector('.tooltip-link').textContent = linkText || '';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+            tooltip.classList.add('visible');
+        }
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+
+        // Legend helper
+        function createLegend(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            Object.entries(categoryColors).forEach(([cat, color]) => {
+                const titleCase = cat.charAt(0).toUpperCase() + cat.slice(1);
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.innerHTML = `<span class="legend-dot" style="background:${color}"></span>${titleCase}`;
+
+                // Fast custom tooltip on hover
+                item.addEventListener('mouseover', (e) => {
+                    showTooltip(e, titleCase, '', categoryDefinitions[cat]);
+                });
+                item.addEventListener('mouseout', hideTooltip);
+
+                container.appendChild(item);
+            });
+        }
+
+        // Generate year filter buttons dynamically from YEARS constant
+        function createYearFilters(containerId, btnClass, onChangeCallback, defaultToLatest = true, defaultToAll = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // Add "All Years" button
+            const allBtn = document.createElement('button');
+            allBtn.className = btnClass + (defaultToAll ? ' active' : '');
+            allBtn.dataset.year = 'all';
+            allBtn.textContent = 'All Years';
+            container.appendChild(allBtn);
+
+            // Add year buttons from YEARS constant
+            YEARS.forEach(year => {
+                const btn = document.createElement('button');
+                const isActive = defaultToLatest && !defaultToAll && year === LATEST_YEAR;
+                btn.className = btnClass + (isActive ? ' active' : '');
+                btn.dataset.year = year;
+                btn.textContent = year;
+                container.appendChild(btn);
+            });
+
+            // Add click handlers
+            container.querySelectorAll('.' + btnClass.split(' ')[0]).forEach(btn => {
+                btn.addEventListener('click', () => {
+                    container.querySelectorAll('.' + btnClass.split(' ')[0]).forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    onChangeCallback(btn.dataset.year);
+                });
+            });
+        }
+
+        // Generate category filter buttons with title case
+        function createCategoryFilters(containerId, btnClass, onChangeCallback, initialCategory = 'all') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // Add "All" button
+            const allBtn = document.createElement('button');
+            allBtn.className = btnClass + (initialCategory === 'all' ? ' active' : '');
+            allBtn.dataset.category = 'all';
+            allBtn.textContent = 'All';
+            container.appendChild(allBtn);
+
+            // Add category buttons
+            Object.keys(categoryColors).forEach(cat => {
+                const titleCase = cat.charAt(0).toUpperCase() + cat.slice(1);
+                const btn = document.createElement('button');
+                btn.className = btnClass + (initialCategory === cat ? ' active' : '');
+                btn.dataset.category = cat;
+                btn.textContent = titleCase;
+                container.appendChild(btn);
+            });
+
+            // Add click handlers
+            container.querySelectorAll('.' + btnClass.split(' ')[0]).forEach(btn => {
+                btn.addEventListener('click', () => {
+                    container.querySelectorAll('.' + btnClass.split(' ')[0]).forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    onChangeCallback(btn.dataset.category);
+                });
+            });
+        }
+
+        // Swimlane Timeline
+        function renderSwimlane() {
+            createLegend('swimlane-legend');
+            const container = document.getElementById('swimlane-timeline');
+            container.innerHTML = '';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            const yearsToShow = activeTimelineYear === 'all' ? YEARS : [parseInt(activeTimelineYear)];
+
+            yearsToShow.forEach(year => {
+                let yearEvents = allEvents.filter(e => e.year === year && e.parsedDate.getFullYear() === year);
+                // Apply category filter
+                if (activeTimelineCategory !== 'all') {
+                    yearEvents = yearEvents.filter(e => e.categories.includes(activeTimelineCategory));
+                }
+                const eventCount = yearEvents.length;
+
+                const yearDiv = document.createElement('div');
+                yearDiv.className = 'swimlane-year';
+                yearDiv.innerHTML = `
+                    <div class="swimlane-year-label">${year} <span>${eventCount} events</span></div>
+                    <div class="swimlane-track"></div>
+                    <div class="swimlane-months">${months.map(m => `<span>${m}</span>`).join('')}</div>
+                `;
+
+                const track = yearDiv.querySelector('.swimlane-track');
+
+                // Calculate positions and handle overlaps
+                const positionedEvents = yearEvents.map(event => {
+                    const month = event.parsedDate.getMonth();
+                    const day = event.parsedDate.getDate();
+                    // Add jitter: ±1.5% random offset for visual interest
+                    const jitter = (Math.random() - 0.5) * 3;
+                    const position = ((month + day / 30) / 12) * 100 + jitter;
+                    return { event, position };
+                });
+
+                // Sort by position
+                positionedEvents.sort((a, b) => a.position - b.position);
+
+                // Group events that are close together (within 3%)
+                const groups = [];
+                positionedEvents.forEach(pe => {
+                    const lastGroup = groups[groups.length - 1];
+                    if (lastGroup && Math.abs(pe.position - lastGroup[0].position) < 3) {
+                        lastGroup.push(pe);
+                    } else {
+                        groups.push([pe]);
+                    }
+                });
+
+                // Render each group with vertical spread
+                groups.forEach(group => {
+                    const count = group.length;
+                    group.forEach((pe, idx) => {
+                        const event = pe.event;
+                        // When filtered by category, use that category's color; otherwise use primary
+                        const displayCategory = activeTimelineCategory !== 'all' ? activeTimelineCategory : event.categories[0];
+                        const color = categoryColors[displayCategory] || '#888';
+                        const hasLink = event.links.length > 0;
+                        const impactScore = calculateImpactScore(event);
+                        const impactClass = getImpactClass(impactScore);
+
+                        const dot = document.createElement('div');
+                        dot.className = `swimlane-dot ${impactClass}` + (hasLink ? ' has-link' : '');
+                        dot.style.left = pe.position + '%';
+                        dot.style.backgroundColor = color;
+                        dot.style.color = color;
+
+                        // Spread vertically within track (15% to 85% of height)
+                        if (count > 1) {
+                            const verticalPosition = 15 + (idx / (count - 1)) * 70;
+                            dot.style.top = verticalPosition + '%';
+                        }
+
+                        dot.addEventListener('mouseover', (e) => {
+                            showTooltip(e, event.title, event.date, hasLink ? 'Click to open link' : '');
+                        });
+                        dot.addEventListener('mouseout', hideTooltip);
+
+                        if (hasLink) {
+                            dot.addEventListener('click', () => {
+                                window.open(event.links[0].url, '_blank');
+                            });
+                        }
+
+                        track.appendChild(dot);
+                    });
+                });
+
+                container.appendChild(yearDiv);
+            });
+        }
+
+        // Category Trends Chart with tooltips
+        function drawCategoryChart() {
+            createLegend('category-legend');
+            // Clear existing chart
+            d3.select('#category-chart').selectAll('*').remove();
+
+            const margin = { top: 20, right: 120, bottom: 60, left: 50 };
+            const width = 900 - margin.left - margin.right;
+            const height = 350 - margin.top - margin.bottom;
+
+            const svg = d3.select('#category-chart')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Build quarters based on year filter
+            const quarters = [];
+            const yearsToShow = activeCategoryChartYear === 'all' ? YEARS : [parseInt(activeCategoryChartYear)];
+            yearsToShow.forEach(y => {
+                for (let q = 0; q < 4; q++) {
+                    quarters.push({ year: y, quarter: q, label: `Q${q+1} ${y}` });
+                }
+            });
+
+            const categories = Object.keys(categoryColors);
+            const data = quarters.map(q => {
+                const counts = {};
+                categories.forEach(c => counts[c] = 0);
+                allEvents.forEach(e => {
+                    const eYear = e.parsedDate.getFullYear();
+                    const eQuarter = Math.floor(e.parsedDate.getMonth() / 3);
+                    if (eYear === q.year && eQuarter === q.quarter) {
+                        e.categories.forEach(c => {
+                            if (counts[c] !== undefined) counts[c]++;
+                        });
+                    }
+                });
+                return { ...q, ...counts };
+            });
+
+            const x = d3.scaleBand()
+                .domain(quarters.map(q => q.label))
+                .range([0, width])
+                .padding(0.1);
+
+            const maxY = d3.max(data, d => d3.sum(categories.map(c => d[c]))) || 1;
+            const y = d3.scaleLinear()
+                .domain([0, maxY])
+                .range([height, 0]);
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end');
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(Math.min(maxY, 10)));
+
+            // Y-axis label
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -40)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '12px')
+                .style('fill', '#666')
+                .text('Number of Events');
+
+            const stack = d3.stack().keys(categories);
+            const series = stack(data);
+
+            svg.selectAll('.layer')
+                .data(series)
+                .enter().append('g')
+                .attr('class', 'layer')
+                .attr('fill', d => categoryColors[d.key])
+                .each(function(layerData) {
+                    const category = layerData.key;
+                    d3.select(this).selectAll('rect')
+                        .data(layerData)
+                        .enter().append('rect')
+                        .attr('class', 'bar')
+                        .attr('x', d => x(d.data.label))
+                        .attr('y', d => y(d[1]))
+                        .attr('height', d => y(d[0]) - y(d[1]))
+                        .attr('width', x.bandwidth())
+                        .on('mouseover', (e, d) => {
+                            const count = d[1] - d[0];
+                            if (count > 0) {
+                                showTooltip(e, category, d.data.label, count + ' events');
+                            }
+                        })
+                        .on('mouseout', hideTooltip);
+                });
+        }
+
+        // Company Activity Chart
+        function drawCompanyChart() {
+            // Clear existing chart
+            d3.select('#company-chart').selectAll('*').remove();
+
+            const margin = { top: 20, right: 30, bottom: 100, left: 50 };
+            const width = 900 - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const companyCounts = {};
+
+            // Filter events by year
+            const yearsToShow = activeCompanyChartYear === 'all' ? YEARS : [parseInt(activeCompanyChartYear)];
+            const filteredEvents = allEvents.filter(e => yearsToShow.includes(e.year));
+
+            filteredEvents.forEach(event => {
+                const text = (event.title + ' ' + event.description).toLowerCase();
+                Object.entries(companyKeywords).forEach(([company, keywords]) => {
+                    if (keywords.some(kw => text.includes(kw))) {
+                        companyCounts[company] = (companyCounts[company] || 0) + 1;
+                    }
+                });
+            });
+
+            const data = Object.entries(companyCounts)
+                .map(([company, count]) => ({ company, count }))
+                .sort((a, b) => b.count - a.count);
+
+            const svg = d3.select('#company-chart')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.company))
+                .range([0, width])
+                .padding(0.2);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.count)])
+                .range([height, 0]);
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'end');
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y));
+
+            // Y-axis label
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -40)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '12px')
+                .style('fill', '#666')
+                .text('Number of Events');
+
+            svg.selectAll('.bar')
+                .data(data)
+                .enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.company))
+                .attr('y', d => y(d.count))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - y(d.count))
+                .attr('fill', 'var(--accent)')
+                .on('mouseover', (e, d) => showTooltip(e, d.company, '', d.count + ' events'))
+                .on('mouseout', hideTooltip);
+
+            svg.selectAll('.label')
+                .data(data)
+                .enter().append('text')
+                .attr('x', d => x(d.company) + x.bandwidth() / 2)
+                .attr('y', d => y(d.count) - 5)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '11px')
+                .attr('fill', 'var(--text)')
+                .text(d => d.count);
+        }
+
+        // Pricing Chart
+        function drawTrendsChart() {
+            const margin = { top: 20, right: 30, bottom: 50, left: 70 };
+            const width = 800 - margin.left - margin.right;
+            const height = 280 - margin.top - margin.bottom;
+
+            const svg = d3.select('#trends-chart')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const pricingData = [
+                { date: new Date(2023, 3, 1), price: 30, label: 'GPT-4 launch ($30/M)' },
+                { date: new Date(2024, 4, 1), price: 2.5, label: 'GPT-4o ($2.50/M)' },
+                { date: new Date(2024, 11, 1), price: 2.5, label: 'End 2024' },
+                { date: new Date(2025, 11, 1), price: 1.5, label: 'End 2025 (~$1.50/M)' }
+            ];
+
+            const x = d3.scaleTime()
+                .domain([new Date(Math.min(...YEARS), 0, 1), new Date(Math.max(...YEARS), 11, 31)])
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([0, 35])
+                .range([height, 0]);
+
+            svg.append('g')
+                .attr('class', 'grid')
+                .selectAll('line')
+                .data(y.ticks(5))
+                .enter().append('line')
+                .attr('x1', 0)
+                .attr('x2', width)
+                .attr('y1', d => y(d))
+                .attr('y2', d => y(d));
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat('%b %Y')));
+
+            svg.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y).tickFormat(d => '$' + d));
+
+            svg.append('text')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -50)
+                .attr('x', -height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('font-size', '11px')
+                .attr('fill', 'var(--text-muted)')
+                .text('Price per million tokens');
+
+            const area = d3.area()
+                .x(d => x(d.date))
+                .y0(height)
+                .y1(d => y(d.price));
+
+            svg.append('path')
+                .datum(pricingData)
+                .attr('fill', 'var(--accent)')
+                .attr('fill-opacity', 0.1)
+                .attr('d', area);
+
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.price));
+
+            svg.append('path')
+                .datum(pricingData)
+                .attr('fill', 'none')
+                .attr('stroke', 'var(--accent)')
+                .attr('stroke-width', 3)
+                .attr('d', line);
+
+            svg.selectAll('.dot')
+                .data(pricingData)
+                .enter().append('circle')
+                .attr('cx', d => x(d.date))
+                .attr('cy', d => y(d.price))
+                .attr('r', 6)
+                .attr('fill', 'var(--bg-card)')
+                .attr('stroke', 'var(--accent)')
+                .attr('stroke-width', 2)
+                .style('cursor', 'pointer')
+                .on('mouseover', (e, d) => showTooltip(e, d.label, '', ''))
+                .on('mouseout', hideTooltip);
+
+            svg.append('text')
+                .attr('x', x(new Date(2024, 2, 1)))
+                .attr('y', y(18))
+                .attr('font-size', '12px')
+                .attr('fill', 'var(--accent)')
+                .attr('font-weight', '600')
+                .text('12x price drop');
+        }
+
+        // Insights Functions
+        function updateTimelineInsights() {
+            const container = document.getElementById('timeline-insights');
+            const years = activeTimelineYear === 'all' ? YEARS : [parseInt(activeTimelineYear)];
+            let filtered = allEvents.filter(e => years.includes(e.year));
+            if (activeTimelineCategory !== 'all') {
+                filtered = filtered.filter(e => e.categories.includes(activeTimelineCategory));
+            }
+
+            // Find busiest quarter
+            const quarterCounts = {};
+            filtered.forEach(e => {
+                const q = `Q${Math.floor(e.parsedDate.getMonth() / 3) + 1} ${e.parsedDate.getFullYear()}`;
+                quarterCounts[q] = (quarterCounts[q] || 0) + 1;
+            });
+            const busiestQuarter = Object.entries(quarterCounts).sort((a, b) => b[1] - a[1])[0];
+
+            const withLinks = filtered.filter(e => e.links.length > 0).length;
+
+            container.innerHTML = `
+                <div class="insight"><span class="insight-value">${filtered.length}</span> events</div>
+                <div class="insight"><span class="insight-value">${withLinks}</span> with source links</div>
+                ${busiestQuarter ? `<div class="insight">Peak: <span class="insight-highlight">${busiestQuarter[0]}</span> (${busiestQuarter[1]} events)</div>` : ''}
+                <div class="insight"><span class="insight-value">${Object.keys(categoryColors).length}</span> categories tracked</div>
+            `;
+        }
+
+        function updateListInsights() {
+            const container = document.getElementById('list-insights');
+            const years = activeYear === 'all' ? YEARS.map(String) : [activeYear];
+            let filtered = [];
+            years.forEach(year => {
+                const yearData = timelineData[year];
+                filtered = filtered.concat(yearData.events.filter(e =>
+                    activeCategory === 'all' || e.categories.includes(activeCategory)
+                ).map(e => ({ ...e, year: parseInt(year) })));
+            });
+
+            // Find peak month
+            const monthCounts = {};
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            filtered.forEach(e => {
+                const monthMatch = e.date.match(/^(\w+)/);
+                if (monthMatch && monthNames.includes(monthMatch[1])) {
+                    monthCounts[monthMatch[1]] = (monthCounts[monthMatch[1]] || 0) + 1;
+                }
+            });
+            const peakMonth = Object.entries(monthCounts).sort((a, b) => b[1] - a[1])[0];
+
+            const withLinks = filtered.filter(e => e.links.length > 0).length;
+
+            container.innerHTML = `
+                <div class="insight"><span class="insight-value">${filtered.length}</span> events</div>
+                <div class="insight"><span class="insight-value">${withLinks}</span> with source links</div>
+                ${peakMonth ? `<div class="insight">Peak: <span class="insight-highlight">${peakMonth[0]}</span> (${peakMonth[1]} events)</div>` : ''}
+            `;
+        }
+
+        function updateCategoryInsights() {
+            const container = document.getElementById('category-insights');
+            const categories = Object.keys(categoryColors);
+
+            // Filter by year
+            const yearsToShow = activeCategoryChartYear === 'all' ? YEARS : [parseInt(activeCategoryChartYear)];
+            const filteredEvents = allEvents.filter(e => yearsToShow.includes(e.year));
+
+            // Count by category
+            const categoryCounts = {};
+            categories.forEach(c => categoryCounts[c] = 0);
+
+            filteredEvents.forEach(e => {
+                e.categories.forEach(c => {
+                    if (categoryCounts[c] !== undefined) {
+                        categoryCounts[c]++;
+                    }
+                });
+            });
+
+            // Find top category
+            const sorted = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
+            const topCategory = sorted[0];
+            const titleCase = topCategory[0].charAt(0).toUpperCase() + topCategory[0].slice(1);
+
+            const yearLabel = activeCategoryChartYear === 'all' ? 'all years' : activeCategoryChartYear;
+
+            container.innerHTML = `
+                <div class="insight">Top category: <span class="insight-highlight">${titleCase}</span> (${topCategory[1]} events)</div>
+                <div class="insight"><span class="insight-value">${filteredEvents.length}</span> events in ${yearLabel}</div>
+                <div class="insight"><span class="insight-value">${categories.length}</span> categories tracked</div>
+            `;
+        }
+
+        function updateCompanyInsights() {
+            const container = document.getElementById('company-insights');
+
+            // Filter by year
+            const yearsToShow = activeCompanyChartYear === 'all' ? YEARS : [parseInt(activeCompanyChartYear)];
+            const filteredEvents = allEvents.filter(e => yearsToShow.includes(e.year));
+
+            const companyCounts = {};
+            filteredEvents.forEach(event => {
+                const text = (event.title + ' ' + event.description).toLowerCase();
+                Object.entries(companyKeywords).forEach(([company, keywords]) => {
+                    if (keywords.some(kw => text.includes(kw))) {
+                        companyCounts[company] = (companyCounts[company] || 0) + 1;
+                    }
+                });
+            });
+
+            const sorted = Object.entries(companyCounts).sort((a, b) => b[1] - a[1]);
+            const leader = sorted[0];
+            const yearLabel = activeCompanyChartYear === 'all' ? 'all years' : activeCompanyChartYear;
+
+            if (leader) {
+                const leaderPct = Math.round((leader[1] / filteredEvents.length) * 100);
+                container.innerHTML = `
+                    <div class="insight"><span class="insight-highlight">${leader[0]}</span> leads with ${leader[1]} events (${leaderPct}%)</div>
+                    <div class="insight"><span class="insight-value">${filteredEvents.length}</span> events in ${yearLabel}</div>
+                    <div class="insight"><span class="insight-value">${Object.keys(companyKeywords).length}</span> companies tracked</div>
+                `;
+            } else {
+                container.innerHTML = `<div class="insight">No company events in ${yearLabel}</div>`;
+            }
+        }
+
+        function updatePricingInsights() {
+            const container = document.getElementById('pricing-insights');
+            container.innerHTML = `
+                <div class="insight"><span class="insight-highlight">12x</span> price reduction since 2023</div>
+                <div class="insight">From <span class="insight-value">$30</span> to <span class="insight-value">~$2.50</span>/million tokens</div>
+                <div class="insight">Biggest drop: <span class="insight-highlight">GPT-4o launch</span> (May 2024)</div>
+            `;
+        }
+
+        // Category Trends and Company Activity year filters (default to "All Years")
+        createYearFilters('category-year-filters', 'category-year-btn', (year) => {
+            activeCategoryChartYear = year;
+            drawCategoryChart();
+            updateCategoryInsights();
+        }, false, true); // defaultToAll = true
+
+        createYearFilters('company-year-filters', 'company-year-btn', (year) => {
+            activeCompanyChartYear = year;
+            drawCompanyChart();
+            updateCompanyInsights();
+        }, false, true); // defaultToAll = true
+
+        // Generate header year links from data
+        document.getElementById('year-links').innerHTML = YEARS.map((year, idx) => {
+            const source = timelineData[year].source;
+            const separator = idx < YEARS.length - 1 ? ', ' : '';
+            return `<a href="${source}">${year}</a>${separator}`;
+        }).join('');
+
+        // Generate about intro with dynamic year range
+        const minYear = Math.min(...YEARS);
+        const maxYear = Math.max(...YEARS);
+        document.getElementById('about-intro').textContent = `${minYear} to ${maxYear} were transformative years for AI. This visualization distills ~${totalEvents} high-impact events from Simon's 700+ blog posts across three annual reviews, algorithmically scored for significance. GPT-4 launched, open-source models exploded, coding assistants became mainstream, and prices dropped 100x.`;
+
+        // Initialize
+        renderList();
+        updateListInsights();
+
+        // Check URL hash for initial tab, default to 'brief'
+        const validTabs = ['brief', 'timeline', 'categories', 'companies', 'trends', 'list'];
+        const initialHash = window.location.hash.slice(1);
+        const initialTab = validTabs.includes(initialHash) ? initialHash : 'brief';
+        activateTab(initialTab, initialTab !== 'brief'); // Don't update hash if using default
+    </script>
+</body>
+</html>
